@@ -19,11 +19,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Verify time conversion
-        run: node --test tests/time.test.js
+        run: node --test tests/*.test.js
       - name: Prepare static files
         run: |
           mkdir -p _site
-          cp index.html style.css app.js time.js favicon.svg _site/
+          cp index.html style.css app.js time.js solar.js locations.js favicon.svg _site/
+          cp -R vendor _site/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

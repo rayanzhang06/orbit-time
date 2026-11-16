@@ -4,5 +4,5 @@
   "private": true,
   "type": "module",
   "description": "三层同心世界时钟 · A world clock in sync",
-  "scripts": { "test": "node --test tests/time.test.js", "start": "python3 -m http.server 4173" }
+  "scripts": { "test": "node --test tests/*.test.js", "start": "python3 -m http.server 4173" }
 }
