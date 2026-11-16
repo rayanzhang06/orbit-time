@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f4f5f7"><meta name="description" content="在同一时刻，看见世界。三层同心世界时钟，轻松比较城市时间、时差与日期。">
+  <title>时序 Orbit · 世界时钟</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="header"><a class="brand" href="./" aria-label="时序首页"><span class="brand-icon">◎</span><span>时序 <span class="brand-en">ORBIT</span></span></a><div class="header-right"><span class="header-caption">A LITTLE CLOSER, ACROSS TIME.</span><button id="theme" class="icon-button" aria-label="切换深色模式" title="切换深色模式">☾</button></div></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow">WORLD TIME, IN SYNC</p><h1>同一时刻，<span>不同世界。</span></h1><p class="subtitle">让距离有刻度，让相聚有时间。</p></div><div class="live-badge" id="mode-badge"><i></i><span>与此刻同步</span></div></section>
+    <div class="workspace">
+      <section class="clock-area" aria-label="同心世界时钟">
+        <div class="clock-topline"><span><i class="tiny-dot"></i> 同一刻度 · 同一时刻</span><span>24 小时制</span></div>
+        <div class="clock-container">
+          <svg id="dial" viewBox="0 0 640 640" role="group" aria-label="三层时间盘，顶部橙色指针代表选定时刻">
+            <defs><filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#303848" flood-opacity=".09"/></filter><linearGradient id="surface" x1="0" y1="0" x2="1" y2="1"><stop stop-color="var(--dial-start)"/><stop offset="1" stop-color="var(--dial-end)"/></linearGradient></defs>
+            <circle class="outer-shell" cx="320" cy="320" r="309"/><circle class="dial-surface" cx="320" cy="320" r="296"/>
+            <g id="rings"></g>
+            <circle class="center-disc" cx="320" cy="320" r="112" filter="url(#shadow)"/>
+            <path class="pointer-line" d="M320 21V202"/><path fill="var(--accent)" d="M313 31H327L320 43Z"/>
+            <g class="center-label"><text x="320" y="275" id="center-caption">本地时间</text><text x="320" y="330" id="center-time">--:--</text><text x="320" y="359" id="center-date"></text><text x="320" y="389" id="center-city"></text></g>
+          </svg>
+        </div>
+        <div class="dial-legend"><span><i class="sun-dot"></i> 日间 06–18 时</span><span><i class="night-dot"></i> 夜间 18–06 时</span><span class="legend-hint">点击任意时间环，更换城市</span></div>
+      </section>
+      <aside class="cities-panel"><div class="section-heading"><h2>我的城市</h2><span>三个地方，一个此刻</span></div><div id="city-cards"></div><div class="insight"><span class="insight-icon">↗</span><div><p id="insight-title">世界正在此刻发生</p><span id="insight-text">时间盘上的每一条径向线，都连接着同一个时刻。</span></div></div><button class="share-button" id="copy"><span>⧉</span> 复制时间对照 <span class="arrow">↗</span></button></aside>
+    </div>
+    <section class="time-machine" aria-label="时间预览"><div class="time-machine-heading"><div><span class="eyebrow">FIND YOUR MOMENT</span><h2>把时间，轻轻拨动。</h2></div><button class="reset" id="reset"><span>↺</span> 回到现在</button></div><div class="scrubber"><button class="step-button" id="back" aria-label="向前15分钟">−</button><div class="range-wrap"><div class="range-labels"><span>−12 小时</span><output id="offset-label">此刻</output><span>+12 小时</span></div><input id="timeline" type="range" min="-720" max="720" step="15" value="0" aria-label="相对此刻的分钟偏移"><div class="range-ticks" aria-hidden="true"><span>│</span><span>│</span><span>│</span><span>│</span><span>│</span><span>│</span><span>│</span><span>│</span><span>│</span></div></div><button class="step-button" id="forward" aria-label="向后15分钟">+</button><div class="precise-time"><label for="exact-time">或选择准确时间 <span id="input-city"></span></label><input id="exact-time" type="datetime-local" aria-label="选择基准城市的日期和时间"><span id="time-error" role="status"></span></div></div></section>
+    <footer><span>◎ &nbsp; ORBIT · 时序</span><p>无论身在何处，总有时刻相连。</p><span>基于 IANA 时区 · 自动适配夏令时</span></footer>
+  </main>
+  <dialog id="city-dialog"><div class="dialog-heading"><div><p class="eyebrow" id="dialog-eyebrow">选择城市</p><h2>下一站，哪里？</h2></div><button id="close-dialog" class="icon-button" aria-label="关闭城市选择">×</button></div><label class="search-box"><span>⌕</span><input type="search" id="city-search" placeholder="搜索城市、国家或时区…" autocomplete="off" aria-label="搜索城市、国家或时区"></label><p class="search-label" id="search-label">常用城市</p><div id="city-results" class="city-results"></div><p class="dialog-note">城市时间依据所选日期自动计算，包含夏令时。</p></dialog>
+  <div class="toast" id="toast" role="status"></div>
+</body>
+</html>
