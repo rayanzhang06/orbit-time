@@ -41,16 +41,16 @@ function buildRings(date){
   const hit=svg('path',{d:arc(r+31,0,180)+arc(r+31,180,360).replace(/^M[^A]+/,'')+' '+arc(r-31,0,180)+arc(r-31,180,360).replace(/^M[^A]+/,''),'fill-rule':'evenodd',class:'ring-hit',role:'button',tabindex:0,'aria-label':`更换${i===0?'基准':'第'+i+'个对比'}城市：${c.name}，${solar.kind==='unknown'?'无地理位置':isDaylight(date,c.zone,solar)?'日间':'夜间'}`});
   hit.onclick=()=>openCity(i);hit.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCity(i);}};g.append(hit);
   g.append(svg('circle',{cx:320,cy:320,r:r+32,class:'ring-border','pointer-events':'none'}));
-  for(const period of ['day','night']){
-   const segment=solar.segments.filter(s=>s.period===period).sort((a,b)=>(b.end-b.start)-(a.end-a.start))[0];
-   if(!segment)continue;
-   const h=(segment.start+segment.end)/2;
-   const [x,y]=pos(r+21,(h-hours)*15);
-   const icon=svg('g',{transform:`translate(${x} ${y})`,class:`period-icon ${period}-icon`,'pointer-events':'none','aria-hidden':'true'});
-   if(period==='day'){
-    icon.append(svg('circle',{r:3}));
-    for(let ray=0;ray<8;ray++){const a=ray*Math.PI/4;icon.append(svg('line',{x1:Math.sin(a)*5,y1:Math.cos(a)*5,x2:Math.sin(a)*7,y2:Math.cos(a)*7}));}
-   }else icon.append(svg('path',{d:'M3.5 -5.5 A6 6 0 1 0 3.5 5.5 A4.7 4.7 0 0 1 3.5 -5.5Z'}));
+  // Mark actual light transitions rather than the middle of each light period.
+  for(const [event,type] of [[solar.sunrise,'sunrise'],[solar.sunset,'sunset']]){
+   if(!event)continue;
+   const [x,y]=pos(r+20,(hourAt(event,c.zone)-hours)*15);
+   const label=(type==='sunrise'?'日出 ':'日落 ')+timeAt(event,c.zone);
+   const icon=svg('g',{transform:`translate(${x} ${y})`,class:`period-icon ${type}-icon`,'pointer-events':'none',role:'img','aria-label':label});
+   icon.append(svg('title',{},label));
+   // Horizon and half sun, plus a directional arrow above the horizon.
+   icon.append(svg('path',{d:'M-7 5H7 M-4 3A4 4 0 0 1 4 3 M-6 0L-7 -1 M6 0L7 -1 M-4 -3L-5 -4 M4 -3L5 -4'}));
+   icon.append(svg('path',{d:type==='sunrise'?'M0 -2V-8 M-2.5 -5.5L0 -8L2.5 -5.5':'M0 -8V-2 M-2.5 -4.5L0 -2L2.5 -4.5'}));
    g.append(icon);
   }
   for(let tick=0;tick<96;tick++){const a=(tick/4-hours)*15;const [x1,y1]=pos(r-22,a),[x2,y2]=pos(r-(tick%4===0?15:18),a);g.append(svg('line',{x1,y1,x2,y2,class:`ring-tick ${tick%4===0?'major':''}`,'pointer-events':'none'}));}
@@ -92,7 +92,10 @@ $('timeline').addEventListener('input',previewFromSlider);
 for(const [id,step]of [['back',-15],['forward',15]])$(id).onclick=()=>{const value=Math.max(-720,Math.min(720,Number($('timeline').value)+step));$('timeline').value=value;previewFromSlider();};
 $('reset').onclick=()=>{frozen=null;sliderAnchor=null;$('timeline').value=0;$('offset-label').textContent='此刻';$('time-error').textContent='';render(true);};
 $('exact-time').addEventListener('change',()=>{const date=fromLocal($('exact-time').value,selected[0].zone);if(!date){$('time-error').textContent='该时间无效，或因夏令时跳转而不存在。';return;}$('time-error').textContent='';frozen=date.getTime();sliderAnchor=frozen;$('timeline').value=0;$('offset-label').textContent='所选基准时刻';render(true);});
-function openCity(index){editing=index;$('dialog-eyebrow').textContent=index===0?'更换基准城市':`更换第 ${index} 个对比城市`;$('city-search').value='';renderResults();$('city-dialog').showModal();$('city-search').focus();}
+function openCity(index){editing=index;$('dialog-eyebrow').textContent=index===0?'更换基准城市':`更换第 ${index} 个对比城市`;$('city-search').value='';renderResults();$('city-dialog').showModal();
+ // On phones, open the picker without summoning the keyboard or moving the viewport.
+ const touchLayout=window.matchMedia('(max-width: 650px), (pointer: coarse)').matches;
+ $(touchLayout?'close-dialog':'city-search').focus({preventScroll:true});}
 function renderResults(){const q=$('city-search').value.trim().toLowerCase();const cities=q?allCities.filter(c=>`${c.name} ${c.en} ${c.country} ${c.zone}`.toLowerCase().includes(q)):curated;$('search-label').textContent=q?`${cities.length} 个匹配城市 / 时区`:'常用城市';const root=$('city-results');root.replaceChildren();const date=now();for(const c of cities){const b=document.createElement('button');b.className='city-option';const left=document.createElement('span'),name=document.createElement('span'),sub=document.createElement('span'),right=document.createElement('span');name.className='option-name';name.textContent=c.name+(selected[editing].zone===c.zone?' ✓':'');sub.className='option-sub';sub.textContent=`${c.country} · ${c.zone}`;right.className='option-time';right.textContent=timeAt(date,c.zone);left.append(name,sub);b.append(left,right);b.onclick=()=>{selected[editing]=c;save('orbit-cities',JSON.stringify(selected.map(c=>c.zone)));$('time-error').textContent='';$('city-dialog').close();render(true);};root.append(b);}if(!cities.length){const p=document.createElement('p');p.className='empty';p.textContent='暂未找到。试试中文城市名、英文名或 IANA 时区（如 Europe/London）。';root.append(p);}root.scrollTop=0;}
 $('city-search').addEventListener('input',renderResults);$('close-dialog').onclick=()=>$('city-dialog').close();$('city-dialog').addEventListener('click',e=>{if(e.target===$('city-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});
 let toastTimer;function toast(message){$('toast').textContent=message;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),3000);}
