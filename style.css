@@ -10,5 +10,6 @@ body.dark{color-scheme:dark;--bg:#202329;--ink:#e8e8eb;--muted:#9399a4;--line:#3
 
 /* Keep the dialog within narrow screens without disabling user pinch zoom. */
 #city-dialog{max-height:calc(100dvh - 32px);overflow:auto}
-.ring-hit:focus{outline:none}
-.ring-hit:focus-visible{stroke:var(--accent);stroke-width:2}
+/* The time rings never retain a visual focus highlight after selection. */
+.ring-hit:focus,.ring-hit:focus-visible{outline:none;stroke:none}
+@media(hover:none){.ring-hit:hover{fill:transparent;fill-opacity:0}}
