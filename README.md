@@ -54,3 +54,7 @@ node --test tests/*.test.js
 - UTC 等无地理位置的时区不绘制日夜色带，并明确提示无法计算，不采用虚构的日出日落。
 
 手机端城市选择弹窗不会自动聚焦搜索框或唤起键盘；点击搜索框后再输入。搜索框采用 16px 字号，避免 iOS Safari 聚焦时自动放大，保留用户手动缩放能力。
+
+## 中文名称
+
+常用城市使用页面内的中文名称，其他 IANA 时区代表城市使用 [Unicode CLDR 中文 exemplarCity 数据](https://github.com/unicode-org/cldr-json/tree/main/cldr-json/cldr-dates-full/main/zh)，支持时区别名，保留中文名、英文名和 IANA 标识搜索。数据随网站打包，不依赖在线翻译。Unicode License V3 见 `vendor/UNICODE-LICENSE`。

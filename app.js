@@ -1,14 +1,17 @@
 import {partsAt,pad,timeAt,localValue,offsetAt,utcLabel,dayDifference,differenceLabel,fromLocal} from './time.js';
 import {solarDay,isDaylight,hourAt} from './solar.js';
+import {chineseCityName} from './city-names.js';
 const $=id=>document.getElementById(id);
 const curated=[
  ['Asia/Shanghai','北京','Beijing','中国'],['Asia/Hong_Kong','香港','Hong Kong','中国'],['Asia/Taipei','台北','Taipei','中国'],['Asia/Tokyo','东京','Tokyo','日本'],['Asia/Seoul','首尔','Seoul','韩国'],['Asia/Singapore','新加坡','Singapore','新加坡'],['Asia/Bangkok','曼谷','Bangkok','泰国'],['Asia/Kolkata','新德里','New Delhi India Kolkata','印度'],['Asia/Kathmandu','加德满都','Kathmandu','尼泊尔'],['Asia/Dubai','迪拜','Dubai','阿联酋'],['Asia/Riyadh','利雅得','Riyadh','沙特阿拉伯'],['Africa/Johannesburg','约翰内斯堡','Johannesburg','南非'],['Africa/Cairo','开罗','Cairo','埃及'],['Africa/Nairobi','内罗毕','Nairobi','肯尼亚'],['Europe/London','伦敦','London','英国'],['Europe/Paris','巴黎','Paris','法国'],['Europe/Berlin','柏林','Berlin','德国'],['Europe/Rome','罗马','Rome','意大利'],['Europe/Madrid','马德里','Madrid','西班牙'],['Europe/Moscow','莫斯科','Moscow','俄罗斯'],['Europe/Istanbul','伊斯坦布尔','Istanbul','土耳其'],['America/New_York','纽约','New York','美国'],['America/Chicago','芝加哥','Chicago','美国'],['America/Denver','丹佛','Denver','美国'],['America/Los_Angeles','洛杉矶','Los Angeles','美国'],['America/Phoenix','凤凰城','Phoenix','美国'],['America/Toronto','多伦多','Toronto','加拿大'],['America/Vancouver','温哥华','Vancouver','加拿大'],['America/Mexico_City','墨西哥城','Mexico City','墨西哥'],['America/Sao_Paulo','圣保罗','Sao Paulo','巴西'],['America/Argentina/Buenos_Aires','布宜诺斯艾利斯','Buenos Aires','阿根廷'],['Pacific/Honolulu','檀香山','Honolulu Hawaii','美国'],['Australia/Sydney','悉尼','Sydney','澳大利亚'],['Australia/Melbourne','墨尔本','Melbourne','澳大利亚'],['Australia/Adelaide','阿德莱德','Adelaide','澳大利亚'],['Australia/Perth','珀斯','Perth','澳大利亚'],['Pacific/Auckland','奥克兰','Auckland','新西兰'],['UTC','协调世界时','UTC','全球']
 ].map(([zone,name,en,country])=>({zone,name,en,country}));
 const known=new Map(curated.map(c=>[c.zone,c]));
 const supported=Intl.supportedValuesOf?Intl.supportedValuesOf('timeZone'):[];
-const allCities=[...curated,...supported.filter(z=>!known.has(z)).map(zone=>({zone,name:zone.split('/').pop().replaceAll('_',' '),en:zone.replaceAll('_',' '),country:zone.split('/')[0]}))];
+const regionNames={Africa:'非洲',America:'美洲',Antarctica:'南极洲',Arctic:'北极地区',Asia:'亚洲',Atlantic:'大西洋',Australia:'澳大利亚',Europe:'欧洲',Indian:'印度洋',Pacific:'太平洋',Etc:'全球'};
+function fallbackCity(zone){return {zone,name:chineseCityName(zone),en:zone.replaceAll('_',' '),country:regionNames[zone.split('/')[0]]||'全球'};}
+const allCities=[...curated,...supported.filter(z=>!known.has(z)).map(fallbackCity)];
 function validZone(z){try{new Intl.DateTimeFormat('en',{timeZone:z});return typeof z==='string';}catch{return false;}}
-function cityFor(zone){return known.get(zone)||allCities.find(c=>c.zone===zone)||{zone,name:zone.split('/').pop().replaceAll('_',' '),country:zone.split('/')[0],en:zone};}
+function cityFor(zone){return known.get(zone)||allCities.find(c=>c.zone===zone)||fallbackCity(zone);}
 function stored(key){try{return localStorage.getItem(key);}catch{return null;}}
 function save(key,value){try{localStorage.setItem(key,value);}catch{/* Usable in private browsing too. */}}
 let localZone=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Shanghai';
